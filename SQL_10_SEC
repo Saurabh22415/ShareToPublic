@@ -1,0 +1,47 @@
+SELECT COUNT(*)
+FROM REQUEST_TRACK_TABLE
+WHERE API_NAME = 'xxx'
+AND REQUEST_TIME >= SYSDATE - 10
+AND EXISTS (
+    SELECT 1
+    FROM REQUEST_TRACK_TABLE AS sub
+    WHERE sub.API_NAME = 'xxx'
+    AND sub.REQUEST_TIME >= main.REQUEST_TIME - INTERVAL '10' SECOND
+    AND sub.REQUEST_TIME < main.REQUEST_TIME
+);
+
+WITH TimeIntervals AS (
+    SELECT 
+        TRUNC(SYSDATE) - 10 + (LEVEL - 1) / (24 * 60 * 60 / 10) AS StartTime,
+        TRUNC(SYSDATE) - 10 + LEVEL / (24 * 60 * 60 / 10) AS EndTime
+    FROM 
+        DUAL
+    CONNECT BY LEVEL <= 864000 -- 10 days * 24 hours * 60 minutes * 60 seconds / 10 seconds
+),
+FilteredRequests AS (
+    SELECT 
+        REQUEST_TIME,
+        API_NAME
+    FROM 
+        REQUEST_TRACK_TABLE
+    WHERE 
+        API_NAME = 'GetTaxDoc' 
+        AND REQUEST_TIME >= TRUNC(SYSDATE) - 10
+)
+SELECT 
+    TO_CHAR(TI.StartTime, 'HH24:MI:SS') AS Start_Time,
+    TO_CHAR(TI.EndTime, 'HH24:MI:SS') AS End_Time,
+    COUNT(FR.REQUEST_TIME) AS Request_Count
+FROM 
+    TimeIntervals TI
+LEFT JOIN 
+    FilteredRequests FR 
+ON 
+    FR.REQUEST_TIME >= TI.StartTime 
+    AND FR.REQUEST_TIME < TI.EndTime
+GROUP BY 
+    TI.StartTime, 
+    TI.EndTime
+ORDER BY 
+    TI.StartTime;
+
