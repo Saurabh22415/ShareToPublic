@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram id="wds" name="WDS Metadata Consumer">
+    <mxGraphModel dx="1600" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="kafka" value="Kafka Topics&#10;DocHub&#10;FileNet&#10;DMS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="180" width="170" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="consumer" value="kafka-consumer-service&#10;&#10;• @KafkaListener&#10;• Validate Message&#10;• Store Inbox Record&#10;• Commit Kafka Offset" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="150" width="240" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="inbox" value="KAFKA_INBOX_EVENT&#10;&#10;STATUS&#10;RETRY_COUNT&#10;NEXT_RETRY_TIME&#10;PROCESSING_NODE&#10;LOCK_EXPIRES_AT" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="610" y="145" width="220" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="scheduler" value="wds-metadata-update-service&#10;&#10;Spring @Scheduled&#10;Poll RECEIVED / RETRY&#10;FOR UPDATE SKIP LOCKED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="930" y="140" width="250" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="meta" value="Metadata Service&#10;&#10;• Parse Payload&#10;• Select Handler&#10;• Update Metadata" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="150" width="220" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="db" value="WDS Metadata DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1590" y="170" width="180" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="dlq" value="DLQ&#10;STATUS = DLQ&#10;Manual Replay" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f4cccc;strokeColor=#990000;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="380" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="retry" value="Retry Logic&#10;RETRY_COUNT++&#10;NEXT_RETRY_TIME&#10;Exponential Backoff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="930" y="380" width="250" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" edge="1" parent="1" source="kafka" target="consumer"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="consumer" target="inbox"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="Scheduler Poll" edge="1" parent="1" source="inbox" target="scheduler"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="scheduler" target="meta"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="meta" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="Failure" edge="1" parent="1" source="scheduler" target="retry"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" value="Retry" edge="1" parent="1" source="retry" target="inbox"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" value="Max Retry Exceeded" edge="1" parent="1" source="retry" target="dlq"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
